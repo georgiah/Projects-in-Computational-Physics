@@ -1,0 +1,178 @@
+\documentclass[10pt]{article}
+\renewcommand{\thesubsection}{\thesection.\alph{subsection}}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{caption}
+
+\graphicspath{ {images/} }
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Georgia Hansford - 349008}
+
+\begin{document}
+
+\begin{center} {\Large PHYC30012 Project 1: Semiclassical Quantisation of Molecular Vibrations} \end{center}
+
+
+{\small
+\paragraph{}
+Diatomic molecules experience two opposing potentials, due to the Van der Waals force (from dipole attractions\footnote{McNaught A.D, Wilkinson A. van der Waals forces [Online]. 1997. http://goldbook.iupac.org/V06597.html [20/08/2016]}) and the Pauli and Coulomb forces (from nuclear repulsion). At small separations, the repulsive force is stronger; and at large separations, the attractive force is stronger. The net result is that the molecules will "vibrate" as the opposing forces interplay, stretching and compressing their molecular bonds. \emph{Here, we aim to calculate the allowed energy levels of vibration for molecular hydrogen, and use these to investigate the Morse potential as a model for the actual potential of molecular hydrogen.}
+
+To simplify our investigation, we will assume that the nuclei are extremely heavy and the electrons react instantaneously; both realistic and valid assumptions on the relative scales we are discussing. We will also assume the molecules do not rotate: a very elementary model, but one that greatly simplifies the calculations to follow.
+
+We will solve as per Bohr's semi-classical approximation, by quantising the action such that:
+\begin{equation} S(E_n) = \frac{\sqrt{2m}}{\hbar} \oint_{r_{in}}^{r_{out}} \sqrt{E_n-V(r)} \, dr = \pi(n+\frac{1}{2}) \end{equation}
+This is essentially equivalent to requiring the de Broglie wavelength of the molecule to fit in the path as a standing wave.\\
+The terminals $r_{in}$ and $r_{out}$ are the turning points of the molecule: i.e. where momentum $p=0$, and hence where
+\begin{equation} E_n - V(r) = 0 \end{equation}
+The turning points can be determined by solving equation 2 for $r$, to give $r_{in}$ and $r_{out}$ in terms of $E_n$. 
+
+We redefine the problem by changing variables to $\epsilon_n \equiv \frac{E_n}{V_0}$, $v(r) \equiv \frac{V(r)}{V_0}$, and $x \equiv \frac{r}{a}$, where $V_0$ is the potential at equilibrium, and $a$ is the equilibrium position. Using dimensionless variables reduces the probability of computational addition and rounding errors. Converting to these variables, the dimensionless turning points are now the solutions to:
+\begin{equation} \epsilon_n - v(x) = 0 \end{equation}
+and the dimensionless energy levels are the solutions to:
+\begin{equation} s(\epsilon_n) = \gamma \int_{x_{-}}^{x_+} (\epsilon_n - v(x))^{\frac{1}{2}} \, dx - \pi(n+\frac{1}{2}) = 0 \end{equation}
+
+\paragraph{}
+Typically, the integral of equation 4 cannot be analytically computed, except for some select few choices of $V(r)$ - this underpins the entire difficulty of calculating energy levels. To evaluate these integrals, we will use numerical integration techniques.
+These techniques estimate area by dividing up the integration interval into segments, and approximating the contribution to the area under a curve. The most basic technique - a rectangular approximation - is how many students are first introduced to integration. Simply approximate each segment as a rectangle, extending either the left or right hand side to intersect the curve. \\
+We will investigate two more sophisticated approximations: the trapezoidal method approximates the area as a trapezoid, extending both the left and right hand sides of each segment to the curve (see the flow chart in Appendix 1 for more information on how the algorithm runs); and Simpson's method fits a quadratic curve between the intersection points. See Figures 1\footnote{Alexandrov O, Wikimedia. Composite trapezoidal rule illustration small [Online]. 1997. https://upload.wikimedia.org/wikipedia/commons/4/4b/Composite$\_$trapezoidal$\_$rule$\_$illustration$\_$small.png [19/08/2016]} and 2\footnote{Popletibus, Wikimedia. Simpsons method illustration [Online]. 2016. https://upload.wikimedia.org/wikipedia/commons/c/ca/Simpsons$\_$method$\_$illustration.svg [19/08/2016]} below showing how each segment is approximated graphically.
+
+\begin{figure}[h]
+\includegraphics[scale=.5]{Images/Project1/Figure1.png}\centering \caption*{\footnotesize Figure 1: Trapezoidal Integration with four segments$^{2}$} \end{figure}
+
+\begin{figure}[h]
+\includegraphics[scale=.2]{Images/Project1/Figure2.png}\centering \caption*{\footnotesize Figure 2: Simpson's Integration with one segment$^{3}$} \end{figure}
+
+To determine how accurate each method is for a given number of segments, we evaulated the integral:
+\begin{equation} \int_{0}^{1} \frac{ln(1+x)}{x} \, dx \end{equation}
+which has a known value of $\frac{\pi^2}{12}$. See Table 1 and Figure 3 below for how accurately each method evaluated the integral for varying numbers of steps.
+
+\begin{figure}[H]
+\includegraphics[scale=.25]{/Project1/Table1.png}\centering \caption*{\footnotesize Table 1: Accuracy of Trapezoidal and Simpson's methods for varying numbers of steps}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[scale=.3]{/Project1/Figure3.png}\centering \caption*{\footnotesize Figure 3: Accuracy of Numerical Integration Methods v. Number of Steps}
+\end{figure}
+
+\paragraph{}
+Both methods converge rapidly, although Simpson's method is much faster than the trapezoidal method, converging at just 500 segments, rather than the trapezoidal's 50,000 (here working to eight decimal places for 'perfect' convergence). The difference in step number requirements may appear significant, but the computing power required to complete the calculation was insignificant: the integral was evaluated by both methods consequtively using 100,000 segments in just 0.012s; even 100,000,000 steps took only 6.633s (run on a MacBook Air with a 1.3GHz processor).\\
+All the same, as Simpson's method does converge faster than the trapezoidal method, we will continue to use it in our following calculations.
+
+\paragraph{}
+We will also need to calculate the root of an equation (namely, solving for $\epsilon_n$ in equation 4). To do so, we will implement the false position algorithm. This requires two points, $x_{i-1}$ and $x_i$ that lie on either side of the root; i.e. 
+\begin{equation} f(x_{i-1})f(x_i) < 0 \end{equation} 
+The algorithm then calculates the next point from:
+\begin{equation} x_{i+1} = x_i - \frac{f(x_i)(x_i - x_{i-1})}{f(x_i) - f(x_{i-1})} \end{equation}
+And then uses either $x_{i-1}$ or $x_i$ along with $x_{i+1}$ (depending on which still satisfies equation 6) to calculate the next point, until $x_{i+1} = 0$. See Appendix 2 for a flow chart of this process.
+
+To test our implementation of this algorithm, we will solve the equation:
+\begin{equation} \int_{0}^{x} t^2 \,dt = x \end{equation}
+for its non-zero root, which a moment's thought shows is $\sqrt{3}$. To do so obviously requires evaluation of an integral; as previously mentioned, we will be using Simpson's rule to do so. Rather than requiring two straddling points as inputs to our program, we will instead just require one 'guess' point. From here we can search for another point that will straddle the root, using an input step size (and reversing the direction of our search if we stray too far).\\
+There are now four parameters that will effect the accuracy of our answers: the number of segments (used in Simpson's method), the starting position to look for a root, the step size to use when searching for a straddling point, and the tolerance level used to determine equivalency. \\
+See Table 2 below for how varying these parameters changed the accuracy of the solution. The decimal value of $\sqrt{3}$ is 1.732051 (to six decimal places). The cells are shaded such that darker greens are less accurate. 
+
+\begin{figure}[h]
+\includegraphics[scale=.3]{Images/Project1/Table2.png}\centering \caption*{\footnotesize Table 2: Accuracy of False Position algorithm for varying accuracy parameters} \end{figure}
+
+Changing the tolerance level had the most significant effect, although there were also some small variations due to step size and starting position. Overall, a small tolerance tended to lead to an accurate result.
+
+We are now in a position to test our program to determine vibrational energy levels. In order to test its logical flow (see Appendix 3) and accuracy, we worked with a simple potential that can be analytically evaluated. Taking the quadratic potential,
+\begin{equation} V(r) = 4 V_0 (\frac{r}{a} - 1)(\frac{r}{a} - 2) \end{equation}
+if we divide through by $V_0$, we obtain the scaled potential:
+\begin{equation} v(x) = 4 (x - 1) (x-2) \end{equation}
+Now, the turning points are the solutions to equation 3. Substituting in our expression for $v(x)$, we obtain the quadratic:
+\begin{equation} -4x^2 + 12 x - 8  + \epsilon_n = 0 \end{equation}
+This has the solutions:
+\begin{equation} x = \frac{1}{2} (3 \pm \sqrt{1 + \epsilon_n}) \end{equation}
+Hence our two turning points are $x_- = \frac{1}{2} (3 - \sqrt{1 + \epsilon_n})$ and $x_+ = \frac{1}{2} (3 + \sqrt{1 + \epsilon_n})$.
+
+\paragraph{}
+Now we find the solution of the equation 4. Taking $\gamma = 1$, and substituting our quadratic expression for $\epsilon_n - v(x)$, we obtain:
+\begin{equation} \int_{x_-}^{x_+} \sqrt{-4 x^2 + 12x - 8 + \epsilon_n} \, dx - (n + \frac{1}{2}) \pi = 0 \end{equation}
+Using the provided equation:
+\begin{equation} \int_{x_-}^{x_+} \sqrt{ax^2 + bx + c} \, dx = \frac{(4ac-b^2)\pi}{8a\sqrt{-a}}, \quad a < 0 \end{equation}
+We obtain:
+\begin{equation} \frac{1}{4}(1 + \epsilon_n)\pi - (n + \frac{1}{2})\pi = 0 \end{equation}
+And hence:
+\begin{equation} \epsilon_n = 4n+1 \end{equation}
+Taking $V_0$ = 1, the first few energy levels are: \newline
+$E_0 = 1$ \quad\quad\quad $E_1 = 5$eV \quad\quad\quad $E_2 = 9$eV \quad\quad\quad $E_3 = 13$eV \quad\quad\quad $E_4 = 17$eV \newline
+and so on, increasing in steps of 4.
+
+\paragraph{}
+See Tables 3 and 4 over page for the program output for varying accuracy parameters for the n=0 and n=3 cases.
+
+\begin{figure}[h]
+\includegraphics[scale=.36]{Images/Project1/Table3.png}\centering \caption*{\footnotesize Table 3: $\epsilon_0$ for varying accuracy parameters}
+\end{figure}
+
+\begin{figure}[h]
+\includegraphics[scale=.36]{Images/Project1/Table4.png} \centering \caption*{\footnotesize Table 4: $\epsilon_3$ for varying accuracy parameters}
+\end{figure}
+
+\paragraph{}
+Evidently, again the step size and starting position make no noticeable impact on the result. For these tolerances there is no change in accuracy, as opposed to the marked improvement between $10^{-5}$ and $10^{-7}$ that we observed in our prior analysis of the false position function. The improvements appear to be solely due to the increase in number of divisions (at least to this level of accuracy - six decimal places). Looking at the difference between the n=0 and n=3 cases, we observe that for 10,000 divisions, even though the absolute size of the error grows as n increases, in fact the error as a percentage of the result decreases: from $10^{-8}$\% to $4.7 \times 10^{-9}$\%. Regardless, it's an incredibly small error and overall an extremely stable result.
+
+\paragraph{}
+Now, we consider a realistic potential: the Morse potential.
+\begin{equation} V_{Morse}(r) = V_0 [(1-e^{-(r-r_{min})/a})^2 -1] \end{equation}
+A moment's inspection shows that this cannot be easy to integrate analytically. Instead, we will locate the turning points analytically, and use our numeric methods to determine the energy levels. \\
+First, the normalised potential is given by:
+\begin{equation} v_{Morse}(x) = (1-e^{-x + \frac{r_{min}}{a}})^2 - 1 \end{equation}
+So we need to solve the equation:
+\begin{equation*} \epsilon_n - v_{Morse}(x) = 0 \end{equation*}
+\begin{equation*} (1-e^{-x + \frac{r_{min}}{a}})^2 = \epsilon_n + 1 \end{equation*}
+\begin{equation*} 1 - e^{-x + \frac{r_{min}}{a}} = \pm \sqrt{\epsilon_n + 1} \end{equation*}
+\begin{equation*} e^{-x + \frac{r_{min}}{a}} = 1 \mp \sqrt{\epsilon_n + 1} \end{equation*}
+\begin{equation*} -x + \frac{r_{min}}{a} = ln(1 \mp \sqrt{\epsilon_n + 1}) \end{equation*}
+\begin{equation*} x = \frac{r_{min}}{a} - ln(1 \mp \sqrt{\epsilon_n + 1}) \end{equation*}
+As $\epsilon_n = \frac{E_n}{V_0}$, where $V_0 > 0$ and $E_n < 0$, $\epsilon_n$ must be negative; and as $\|V_0\| > \|E_n\|$, for all $n$, $\|\epsilon_n\|<1$. Hence the argument of the natural logarithm lies between 0 and 2, exclusive (a valid range of inputs). \\
+As $-1<\epsilon_n<0$, we know that $ln(1-\sqrt{\epsilon_n + 1}) < 0$, and $ln(1+\sqrt{\epsilon_n + 1})>0$. Hence:
+\begin{equation*} x_- = \frac{r_{min}}{a} - ln(1+\sqrt{\epsilon_n + 1}) \end{equation*}
+\begin{equation*} x_+ = \frac{r_{min}}{a} - ln(1-\sqrt{\epsilon_n + 1}) \end{equation*}
+
+\paragraph{}
+As $\epsilon_n$ has a very small range of valid values, our program is brittle when it comes to drastically varying the accuracy parameters. As such, the starting position and step size for this stage of the project have been hard-coded into the program as -0.5 and 0.01, to preserve output validity. The value of $\gamma$ for molecular hydrogen has been provided as $\gamma = 33.6567 a$, where $a$ is undetermined. As such, we will vary the value of $a$ to best fit several energy levels. \\
+For the $n=0$ first energy level, the optimal value of $a$ was calculated to be $a=0.514840$. The calculated energy levels and the known values are shown below in Table 5.
+
+\begin{figure}[h]
+\includegraphics[scale=.25]{Images/Project1/Table5.png} \centering \caption*{\footnotesize Table 5: Energy levels using the Morse potential with a = 0.514840} \end{figure}
+
+For the $n=1$ second energy level, the optimal value of $a$ was calculated to be $a = 0.515723$. The calculated energy levels and the known values are shown over page in Table 6.
+
+\begin{figure}[!h]
+\includegraphics[scale=.25]{Images/Project1/Table6.png} \centering \caption*{\footnotesize Table 6: Energy levels using the Morse potential with a = 0.515723} \end{figure}
+
+The accuracy of these energy levels is very good for levels close to those for the optimised $a$. They drift considerably for the largest values of $n$. In order to investigate whether this drift is due to the large distance between the $n=1$ and $n=14$ energy levels, or if it is inherent from the Morse potential, we perform the same calculation for the $n=10$ energy level, which has an optimal value $a=0.487412$, as shown below in Table 7.
+
+\begin{figure}[!h]
+\includegraphics[scale=.25]{Images/Project1/Table7.png} \centering \caption*{\footnotesize Table 7: Energy levels using the Morse potential with a = 0.487412} \end{figure}
+
+We still observe a large error for the highest energy levels even when we optimise $a$ for a close energy level.
+
+\paragraph{Conclusions}
+%\emph {Conclusions}\\
+By creating programs that are able to numerically evaluate integrals and locate roots with high precision, we were able to combine these into a powerful program that is able to compute the root of an integral equation. \\
+We tested the validity and accuracy of this program by inputting an equation that can by analytically solved. The output showed both that the program's logical flow worked as intended, and that the results retained the high levels of accuracy shown by its component functions. \\
+To evaluate the vibrational energy levels of molecular hydrogen, we used the Morse potential as the potential function. By adjusting the value of $a$, the equilibrium position, for several energy levels, we were able to fit the calculated energy levels to their known value, which generally provided a reasonable fit for other nearby energy levels. This reasonable fit degraded sharply for the higher energy levels, $n=12, 13, 14$, where the validity of the Morse potential seems to decrease. By adjusting $a$ to fit a high energy level and observing the outcome, we were able to conclude that the Morse potential loses accuracy for high energy levels.
+
+\newpage
+\textbf{\Large Appendix 1}
+\begin{figure}[hb]
+\includegraphics[scale=.4]{Images/Project1/Appendix1.png} \centering \caption*{\footnotesize Appendix 1: Flow chart for the trapezoidal method} \end{figure}
+
+\newpage
+\textbf{\Large Appendix 2}
+\begin{figure}[!hb]
+\includegraphics[scale=.6]{Images/Project1/Appendix2.png} \centering \caption*{\footnotesize Appendix 2: Flow chart for the false position algorithm} \end{figure}
+
+\newpage
+\textbf{\Large Appendix 3}
+\begin{figure}[!hb]
+\includegraphics[scale=.6]{Images/Project1/Appendix3.png} \centering \caption*{\footnotesize Appendix 3: Flow chart for determining vibrational energy levels}
+\end{figure}
+\end{document}
