@@ -1,0 +1,211 @@
+\documentclass[10pt]{article}
+\renewcommand{\thesubsection}{\thesection.\alph{subsection}}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{caption}
+
+\graphicspath{ {images/} }
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Georgia Hansford - 349008}
+
+
+\begin{document}
+
+\begin{center} {\Large PHYC30012 Project 2: Structure of White Dwarf Stars} \end{center}
+
+{\small
+\bigskip
+A possible outcome as a star reaches the end of its working life is that it becomes a white dwarf: a cold star roughly the mass of the sun, so dense that it is compressed into a radius roughly the size of the Earth's. The star compresses due to the gravitational force of attraction between atoms in the core. At this stage of its life, the remaining atoms are likely to be $^{56}$Fe and $^{12}$C, two of the most stable nuclei. As the star compresses, the gravitional force is opposed by an electron degeneracy pressure, arising as a result of the Pauli exclusion princple, and because the electrons behave like a free Fermi gas as the nucleons compress. \\
+The star is in equilibrium when these forces cancel each other, that is:
+\begin{equation} F_{pressure} = F_{grav} \end{equation}
+\begin{equation} \frac{dP}{dr} = -\frac{Gm(r)}{r^2}\rho \end{equation}
+Using: 
+\begin{equation} \frac{dP}{dr} = (\frac{d\rho}{dr})(\frac{dP}{d\rho}) \end{equation}
+We can write equation 2 as:
+\begin{equation} \frac{d\rho}{dr} = -(\frac{dP}{d\rho})^{-1}\frac{Gm(r)}{r^2}\rho \end{equation}
+By combining the number density of electrons with two-fold spin degeneracy, and relating pressure to energy, we obtain the relation:
+\begin{equation} \frac{dP}{d\rho} = Y_e \frac{m_e}{M_p} \gamma(({\frac{\rho}{\rho_0}})^{1/3}) \end{equation}
+Where:
+\begin{equation} \gamma(x) = \frac{x^2}{3(1+x^2)^{1/2}} \end{equation}
+\begin{equation} \rho_0 = \frac{M_p n_0}{Y_e} \end{equation}
+And $Y_e$ is the ratio of electrons to nucleons, $m_e$ is electon mass, $M_p$ is proton mass, and $n_0$ is the density at which the Fermi momentum equals electron mass. \\
+Here we take the opportunity to scale our variables, to reduce the complexity of our equations, and to reduce the scope for computational adding and rounding errors.
+\begin{equation} \rho = \rho_0 \bar{\rho} \end{equation}
+\begin{equation} \rho_0 \equiv \frac{M_p n_0}{Y_e} = 9.799 \times 10^5 Y_e^{-1} gm cm^{-3} \end{equation}
+\begin{equation} r = R_0 \bar{r} \end{equation}
+\begin{equation} R_0 \equiv [\frac{Y_e(m_e/M_p)}{4\pi G \rho_0}]^{1/2} = 7.62 \times 10^8 Y_e cm \end{equation}
+\begin{equation} m = M_0 \bar{m} \end{equation}
+\begin{equation} M_0 \equiv 4 \pi R_0^3 \rho_0 = 5.67 \times 10^{33} Y_e^2 gm \end{equation}
+
+Hence $Y_e$, $\bar{m}$, $\bar{r}$ and $\bar{\rho}$ are all dimensionless, and will be expressed without units for the duration of this report.\\
+
+Substituting equations 5, 8, 10 and 12 into equation 4, we obtain:
+\begin{equation} \frac{d\bar{\rho}}{d\bar{r}} = - \frac{\bar{m} \bar{\rho}}{\gamma(\bar{\rho}^{1/3})\bar{r}^2} \end{equation}
+
+Lastly, using the elementary equation:
+\begin{equation} m(r) = 4 \pi \int_{0}^{r}\rho(r')r'^2 \,dr' \end{equation}
+We differentiate and substitute equations 8, 10 and 12 to obtain:
+\begin{equation} \frac{d\bar{m}}{d\bar{r}} = \bar{r}^2 \bar{\rho} \end{equation}
+
+Equations 14 and 16 form a coupled set of ordinary differential equations: solving them will provide the relations $m(r)$ and $\rho(r)$ for a white dwarf star. \\
+
+\em{We aim to solve these equations to determine the nature of the relations $m(r)$ and $\rho(r)$, and use our results to estimate the central densities and compositions of two white dwarf stars, Sirius B and 40 Eri B.} \em
+
+\bigskip
+
+
+As a preliminary test, we used Euler's method of first-order approximation to solve the coupled equations.\\
+
+Euler's method uses the previous values of the ordinary differential equations at a point to determine the value of their solutions at a point one "step" away. Generally, if we have:
+\begin{equation} \frac{dy}{dx} = f(x, y, z) \end{equation}
+\begin{equation} \frac{dz}{dx} = g(x, y, z) \end{equation}
+
+Then Euler's method calculates the solutions using the iterative algorithm:
+\begin{equation} x_{n+1} = x_n + h \end{equation}
+\begin{equation} y_{n+1} = y_n + hf(x_n, y_n, z_n) \end{equation}
+\begin{equation} z_{n+1} = z_n + hg(x_n, y_n, z_n) \end{equation}
+Where h is the size of the interval between calculated points. See Figure 1 below for an illustration of this calculation\footnote{San Joaquin Delta College. [Online]. 2009. http://calculuslab.deltacollege.edu/ODE/7-C-1/7-C-1-h-b.html [09/09/2016]}.
+
+\bigskip
+
+\begin{figure}[h]
+\includegraphics[scale=.6]{Images/Project2/Figure1.png} \centering \caption*{\footnotesize Figure 1: Calculating the next step of a solution using Euler's method$^{1}$} \end{figure}
+
+We begin from $\bar{r}=0$, and iterate until $\bar{\rho} = 0$, which will be our indicator that the surface of the star has been reached (see Appendix 1 for a flow chart of this process). The results for $\bar{m}$ and $\bar{\rho}$ using the Euler method are shown below in Figure 2. 
+
+\bigskip \bigskip \bigskip
+
+\begin{figure}[h!]
+\includegraphics[scale=.4]{Images/Project2/Figure2.png}\centering \caption*{\footnotesize Figure 2: $\bar{m}$ v. $\bar{r}$ and $\bar{\rho}$ v. $\bar{r}$ using Euler's method with $Y_e = 1$, $\rho_c = 10$ and $h=0.01$} \end{figure}
+
+As the intention was to determine if the program is performing calculations as expected, these results look excellent. Both functions are smooth; $\bar{m}$ is increasing and $\bar{\rho}$ is decreasing as anticipated; and there is no abrupt finish, they both realistically taper off at the end. \\
+
+Euler's method uses the value of a derivative at the previous step to determine the value of the solution at the next step. An obvious improvement on this method is to use the value of the derivative at the midpoint of the steps. This observation can be extended to using more points and more derivative evaluations to calculate each point of the solution. One such extension is the Runge-Kutta method; which improves on the accuracy of the Euler method, at the cost of additional computation.\\
+
+Using the Runge-Kutta method to solve equations 14 and 16 requires eight intermediary calculations at each step:
+\begin{equation} f_1 = f(x_n, y_n, z_n) \end{equation}
+\begin{equation} g_1 = g(x_n, y_n, z_n) \end{equation}
+\begin{equation} f_2 = f(x_n + \frac{h}{2}, y_n + \frac{h}{2}f_1, z_n + \frac{h}{2}g_1) \end{equation}
+\begin{equation} g_2 = g(x_n + \frac{h}{2}, y_n + \frac{h}{2}f_1, z_n + \frac{h}{2}g_1) \end{equation}
+\begin{equation} f_3 = f(x_n + \frac{h}{2}, y_n + \frac{h}{2}f_2, z_n + \frac{h}{2}g_1) \end{equation}
+\begin{equation} g_3 = g(x_n + \frac{h}{2}, y_n + \frac{h}{2}f_2, z_n + \frac{h}{2}g_1) \end{equation}
+\begin{equation} f_4 = f(x_n + h, y_n + hf_3, z_n + hg_3) \end{equation}
+\begin{equation} g_4 = g(x_n + h, y_n + hf_3, z_n + hg_3) \end{equation}
+
+And then determines the next points of the solutions as follows:
+\begin{equation} x_{n+1} = x_n + h \end{equation}
+\begin{equation} y_{n+1} = y_n + \frac{h}{6}(f_1 + 2f_2 + 2f_3 + f_4) \end{equation}
+\begin{equation} z_{n+1} = z_n + \frac{h}{6}(g_1 + 2g_2 + 2g_3 + g_4) \end{equation}
+
+\begin{figure}[h!]
+\includegraphics[scale=.35]{Images/Project2/Figure3.png} \centering \caption*{\footnotesize Figure 3: $\bar{m}$ v. $\bar{r}$ and $\bar{\rho}$ v. $\bar{r}$ using the Runge-Kutta method with $Y_e = 1$ and $h = 0.01$} \end{figure}
+
+Again integrating from $\bar{r}=0$ until $\bar{\rho}=0$, we were able to plot the solutions of Equations 3 and 4 using the Runge-Kutta method, as shown in Figure 3.
+
+
+This looks as good a result as we obtained using Euler's method. Objectively, the Runge-Kutta method is a more accurate technique than Euler's method. To quantify the difference between the methods, we tabulated the total scaled mass $\bar{M}$ and the total scaled radius $\bar{R}$ for various values of $h$ for both Euler's and the Runge-Kutta method, as shown in Table 1 below.
+
+\begin{figure}[h!]
+\includegraphics[scale=.4]{Images/Project2/Table1.png} \centering \caption*{\footnotesize Table 1: Comparison of Results using various values of h for Euler's method and the Runge-Kutta method} \end{figure}
+
+Evidently, both methods perform better when $h$ is smaller. They agree to roughly 2-3 decimal places when $h\le0.001$, but quickly diverge for large $h$. This is hardly surprising; when $h=0.5$, Euler's method only performs one step and Runge-Kutta only three, giving wildly different estimations. See the graphs below to observe how elementary such estimations are in Figures 4 and 5. \\
+
+\begin{figure}[h!]
+\includegraphics[scale=.35]{Images/Project2/Figure4.png} \centering \caption*{\footnotesize Figure 4: $\bar{m}$ v. $\bar{r}$ and $\bar{\rho}$ v. $\bar{r}$ using Euler's method with $Y_e = 1$ and $h = 0.5$} \end{figure}
+
+\begin{figure}[h!]
+\includegraphics[scale=.35]{Images/Project2/Figure5.png} \centering \caption*{\footnotesize Figure 5: $\bar{m}$ v. $\bar{r}$ and $\bar{\rho}$ v. $\bar{r}$ using the Runge-Kutta method with $Y_e = 1$ and $h = 0.5$} \end{figure} 
+
+ We know that Runge-Kutta is the more accurate method, but evidently Euler's method still performs well for small values of $h$. Note that the table could not be naturally extended to $h=1$ as the methods terminate before making any estimation.
+
+ \bigskip
+
+We will continue our investigation using the Runge-Kutta technique, which guarantees better accuracy; and a stable value of $h=0.00001$. Now we are able to determine how the values of $\bar{M}$ and $\bar{R}$ change as $\bar{\rho_c}$, the central density, or $\rho$ at $r=0$, is varied.
+
+
+As per the data in Table 2, as the central density increases, the total scaled mass $\bar{M}$ increases, and the total scaled radius $\bar{R}$ decreases. This is partially counterintuitive: one may expect that as we are integrating until $\bar{\rho_c} = 0$, a larger initial value of $\bar{\rho_c}$ would result in a larger interval of integration, and hence a larger value of $\bar{R}$. Observation of the plots (see Figure 6) of $\bar{\rho}$ for different $\bar{\rho_c}$ show that larger initial values decay much faster, causing $\bar{\rho}$ to intercept the $\bar{r}$-axis earlier, and hence decreasing the radius. \\
+
+\begin{figure}[h!]
+\includegraphics[scale=.35]{Images/Project2/Table2.png} \centering \caption*{\footnotesize Table 2: $\bar{M}$ and $\bar{R}$ for varying values of $\bar{\rho_c}$ using the Runge-Kutta method with $h = 0.00001$} \end{figure}
+
+\begin{figure}[h!]
+\includegraphics[scale=0.35]{Images/Project2/Figure6.png} \centering \caption* {\footnotesize Figure 6: $\bar{m}$ v. $\bar{r}$ and $\bar{\rho}$ v. $\bar{r}$ for $Y_e = 1$ and $h = 0.00001$. The solid lines are for $\bar{\rho_c} = 1$, and the dotted lines ares for $\bar{\rho_c} = 10$} \end{figure}
+
+
+It is instructive to also consider the total mass $M$ and radius $R$ as the central density increases, see Table 3. For extremely large central densities, the mass of the white dwarf asymptotes, while the radius continues to shrink to miniscule sizes. This is a manifestation of the Chandrasekhar limit, which specifies the maximum mass of a white dwarf star. Stars with masses larger than the Chandrasekhar limit are no longer stable white dwarfs: they may go supernova, or become a neutron star or even a black hole.
+
+\begin{figure}[h]
+\includegraphics[scale = 0.35]{Images/Project2/Table3.png} \centering \caption*{\footnotesize Table 3: $M$ and $R$ in g, cm and solar units for varying $\bar{\rho_c}$, with $Y_e = 1$ and $h = 0.00001$} \end{figure}
+
+The Chandrasekhar limit gives the maximum mass as $M = 1.44$ solar masses\footnote{Nave, R, The Chandrasekhar Limit for White Dwarfs [Online]. http://hyperphysics.phy-astr.gsu.edu/hbase/astro/whdwar.html [02/09/2016]}. This differs from our tabulated result as we have assumed $Y_e = 1$, which is unrealistic. If we instead take $Y_e = 0.464$, (the value for $^{56}$Fe), our limiting behaviour approaches $M = 1.25$ solar masses, which is within the accepted limit. \\
+
+Now we consider the composition of two white dwarf stars: Sirius B and 40 Eri B. If we take $Y_e = 0.5$ for $^{12}$C, and as before, $Y_e = 0.464$ for $^{56}$Fe, we can vary $Y_e$ between this values, and $\bar{\rho_c}$ to estimate the compositions and densities of the stars.
+
+Sirius B has mass and radius $M = 1.053 \pm 0.028$ solar masses, $R = 0.0074 \pm 0.0006$ solar radii. We varied $\bar{\rho_c}$ and $Y_e$ to obtain values that are within the acceptable ranges for both mass and radius. By altering $\bar{\rho_c}$ in increments of 1, and $Y_e$ in increments of 0.001, we determined which combinations yielded results within the error range for Sirius B, as shown below in Table 4.
+
+\begin{figure}[h]
+\includegraphics[scale = 0.35]{Images/Project2/Table4.png} \centering \caption*{\footnotesize Table 4: Results matching observed values for Siruis B for varying $\bar{\rho_c}$ and $Y_e$} \end{figure}
+
+Evidently there are a large number of possible combinations that agree with the observed values for Sirius B. There is one combination that exactly matches the given values of $M = 1.053$ solar masses and $R = 0.0074$ solar radii: when $\bar{\rho_c} = 23$, and $Y_e = 0.497$. From this we can infer that it is likely that Sirius B is composed of approximately 92\% $^{12}$C and 8\% $^{56}$Fe; and has a central density of approximately $\rho_c = 4.5 \times 10^7$ $gm$ $cm^{-3}$. The full tabulation of results is shown in Appendix 2. \\
+
+Performing the same experiment with 40 Eri B, which has $M = 0.48 \pm 0.02$ solar units, $R = 0.0124 \pm 0.0005$ solar units, required changing the variance in $\bar{\rho_c}$ down to 0.1, as the acceptable band of inputs was much smaller. See the results below in Table 5.
+
+\begin{figure}[h!]
+\includegraphics[scale = .35]{Images/Project2/Table5.png} \centering \caption*{\footnotesize Table 5: Results matching observed values for 40 Eri B for varying $\bar{\rho_c}$ and $Y_e$} \end{figure}
+
+\medskip \medskip
+
+The exact values were observed as the result from inputs $Y_e = 0.467$ and $\bar{\rho_c} = 1.3$, or $\rho_c = 2.7 \times 10^6$ $gm$ $cm^{-3}$. Hence the composition of 40 Eri B is approximately 8\% $^{12}$C and 92\% $^{56}$Fe. The full tabulation of results is shown in Appendix 3.
+
+Note that there is a large scope for error in these results: as quick qualitative check, we selected two disparate results from Appendix 2 that are still provide results within the provided margins of error. \\
+Take $\bar{\rho_c} = 19$ and $Y_e = 0.5$. This gives $\rho_c = 3.7 \times 10^7$ $gm$ $cm^{-3}$. And selection of $\bar{\rho_c} = 32$, $Y_e = 0.490$ yields $\rho_c = 6.4 \times 10^7$ $gm$ $cm^{-3}$. This suggests a (rough) error margin of $\pm 33\%$; hence we should definitely treat our results as estimations. 
+
+\bigskip \bigskip
+
+\em {Conclusions}\\ \em
+By creating logically simple programs based on a couple of simple approximation techniques, we created a mechanism that is able to solve a system of coupled differential equations: no small feat. \\
+By holding $Y_e$ and $\bar{\rho_c}$ fixed, we were able to investigate how changing the size of the steps influenced the results for both the Euler and Runge-Kutta methods. Then, by selecting a step size and the Runge-Kutta method, we were able to investigate how changing $\bar{\rho_c}$ affects the results for a fixed $Y_e$. \\
+Finally, by changing both $Y_e$ and $\bar{\rho_c}$, we were able to match the results to observed quantities for two white stars, and find estimations for their central densities $\rho$ and relative compositions of $^{12}$C and $^{56}$Fe as follows: \\
+Sirius B: $\rho_c \approx 4.5 \times 10^7$ $gm$ $cm^{-3}$, with $\approx 92\% ^{12}$C and $\approx 8\% ^{56}$Fe. \\
+40 Eri B: $\rho_c \approx 2.7 \times 10^6$ $gm$ $cm^{-3}$, with $\approx 8\% ^{12}$C and $\approx 92\% ^{56}$Fe. 
+
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+
+\textbf{\Large Appendix 1}
+\begin{figure}[hb]
+\includegraphics[scale=.55]{Images/Project2/Appendix1.png} \centering \caption*{\footnotesize Appendix 1: Flow chart for Euler's method} \end{figure}
+
+\bigskip\bigskip\bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\bigskip \bigskip \bigskip
+\textbf{\Large Appendix 2}
+\begin{figure}[hb]
+\includegraphics[scale=.52]{Images/Project2/Appendix2.png} \centering \caption*{\footnotesize Appendix 2: Table of results for Sirius B} \end{figure}
+
+\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip\bigskip
+\textbf{\Large Appendix 3}
+\begin{figure}[hb]
+\includegraphics[scale=.52]{Images/Project2/Appendix3.png} \centering \caption*{\footnotesize Appendix 3: Table of results for 40 Eri B} \end{figure}
+
+}
+
+\end{document}
